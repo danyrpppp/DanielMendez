@@ -6,7 +6,15 @@ from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from accounts.views import MeAPIView, RegisterAPIView
-from catalog.views import CategoryViewSet, ServiceViewSet, TechnicianProfileViewSet, ZoneViewSet
+from catalog.views import (
+    CategoryViewSet,
+    ServiceViewSet,
+    TechnicianOnboardingAPIView,
+    TechnicianProfileViewSet,
+    TechnicianServicePhotoViewSet,
+    TechnicianServiceViewSet,
+    ZoneViewSet,
+)
 from disputes.views import DisputeViewSet
 from notifications.views import NotificationViewSet
 from recommendations.views import RecommendationAPIView
@@ -18,6 +26,8 @@ router.register("categories", CategoryViewSet)
 router.register("zones", ZoneViewSet)
 router.register("technicians", TechnicianProfileViewSet)
 router.register("services", ServiceViewSet)
+router.register("technician/services", TechnicianServiceViewSet, basename="technician-services")
+router.register("technician/service-photos", TechnicianServicePhotoViewSet, basename="technician-service-photos")
 router.register("ratings", RatingViewSet)
 router.register("penalties", PenaltyViewSet)
 router.register("disputes", DisputeViewSet)
@@ -29,6 +39,7 @@ urlpatterns = [
     path("api/auth/me/", MeAPIView.as_view(), name="me"),
     path("api/auth/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("api/technician/onboarding/", TechnicianOnboardingAPIView.as_view(), name="technician_onboarding"),
     path("api/recommendations/", RecommendationAPIView.as_view(), name="recommendations"),
     path("api/whatsapp/webhook/", WhatsAppWebhookView.as_view(), name="whatsapp_webhook"),
     path("api/", include(router.urls)),

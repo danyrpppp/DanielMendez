@@ -32,12 +32,35 @@ backend/    Django, Django REST Framework, JWT auth, recommendation modules
 
 ## Local development
 
+### One-command setup
+
+```bash
+scripts/setup-dev.sh
+```
+
+The setup script installs the required Ubuntu packages when `apt-get` is available:
+
+- Node.js/npm already provided by the environment
+- Python 3.12 virtualenv support (`python3.12-venv`)
+- PostgreSQL client and build libraries (`postgresql-client`, `libpq-dev`)
+- backend dependencies into `backend/.venv`
+- frontend dependencies into `frontend/node_modules`
+
+### PostgreSQL
+
+SQLite is used by default for quick local development. To run PostgreSQL locally:
+
+```bash
+docker compose up -d postgres
+cp backend/.env.example backend/.env
+```
+
+Then keep the PostgreSQL variables enabled in `backend/.env`.
+
 ### Frontend
 
 ```bash
-cd frontend
-npm install
-npm run dev
+scripts/run-frontend.sh
 ```
 
 Open `http://localhost:3000`.
@@ -45,18 +68,10 @@ Open `http://localhost:3000`.
 ### Backend
 
 ```bash
-cd backend
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env
-python manage.py migrate
-python manage.py runserver
+scripts/run-backend.sh
 ```
 
 Open `http://localhost:8000/api/`.
-
-> The cloud environment used for this first scaffold did not include `python3-venv`, so dependencies were installed with `pip --user` for validation. A standard local Python environment should use the virtualenv steps above.
 
 ## First API endpoints
 
@@ -66,6 +81,9 @@ Open `http://localhost:8000/api/`.
 - `GET /api/categories/`
 - `GET /api/zones/`
 - `GET /api/services/`
+- `GET|POST|PATCH /api/technician/onboarding/`
+- `GET|POST|PATCH|DELETE /api/technician/services/`
+- `GET|POST|DELETE /api/technician/service-photos/`
 - `POST /api/recommendations/`
 - `GET|POST /api/whatsapp/webhook/`
 
@@ -83,9 +101,9 @@ Example recommendation request:
 ## MVP build order
 
 1. Seed categories and zones.
-2. Build technician onboarding and service CRUD.
+2. Use `/technician` to complete technician onboarding and manage services with JWT auth.
 3. Connect WhatsApp Cloud API webhook.
 4. Improve intent extraction with Gemini Flash or OpenRouter.
 5. Build technician recommendation response templates for WhatsApp.
-6. Add technician/admin/arbiter dashboard pages.
+6. Add administrator and arbiter dashboard pages.
 7. Expand dispute moderation and reputation effects.

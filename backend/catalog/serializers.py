@@ -26,9 +26,11 @@ class TechnicianAvailabilitySerializer(serializers.ModelSerializer):
 
 
 class ServicePhotoSerializer(serializers.ModelSerializer):
+    service_id = serializers.PrimaryKeyRelatedField(source="service", queryset=Service.objects.all(), write_only=True)
+
     class Meta:
         model = ServicePhoto
-        fields = ["id", "image", "caption", "created_at"]
+        fields = ["id", "service_id", "image", "caption", "created_at"]
         read_only_fields = ["id", "created_at"]
 
 
@@ -53,7 +55,7 @@ class TechnicianProfileSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "is_verified", "created_at", "updated_at"]
+        read_only_fields = ["id", "is_verified", "completed_services", "service_completion_rate", "created_at", "updated_at"]
 
 
 class ServiceSerializer(serializers.ModelSerializer):
@@ -80,3 +82,25 @@ class ServiceSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
+
+
+class TechnicianServiceSerializer(serializers.ModelSerializer):
+    category = CategorySerializer(read_only=True)
+    category_id = serializers.PrimaryKeyRelatedField(source="category", queryset=Category.objects.filter(is_active=True), write_only=True)
+    photos = ServicePhotoSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Service
+        fields = [
+            "id",
+            "category",
+            "category_id",
+            "title",
+            "description",
+            "base_price",
+            "is_active",
+            "photos",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "category", "photos", "created_at", "updated_at"]
