@@ -29,6 +29,7 @@ backend/    Django, Django REST Framework, JWT auth, recommendation modules
 - `reputation`: ratings and penalties.
 - `disputes`: dispute records, evidence and AI summary placeholder.
 - `notifications`: dashboard/WhatsApp/email notification records.
+- `adminpanel`: administrator summary metrics for dashboard monitoring.
 
 ## Local development
 
@@ -93,6 +94,7 @@ This creates the initial service categories and Barranquilla/Soledad coverage zo
 - `GET|POST|PATCH /api/technician/onboarding/`
 - `GET|POST|PATCH|DELETE /api/technician/services/`
 - `GET|POST|DELETE /api/technician/service-photos/`
+- `GET /api/admin/summary/`
 - `POST /api/recommendations/`
 - `GET|POST /api/whatsapp/webhook/`
 
@@ -106,6 +108,16 @@ Example recommendation request:
   "limit": 5
 }
 ```
+
+
+## Admin dashboard
+
+Visit `http://localhost:3000/admin` to load the administrator dashboard. Paste a JWT access token for either:
+
+- a Django staff/superuser, or
+- a SubasTech user with `role=admin`.
+
+The dashboard consumes `GET /api/admin/summary/` and shows platform metrics, recent technicians, services, disputes, role distribution and operational alerts.
 
 ## WhatsApp Cloud API flow
 

@@ -6,6 +6,7 @@ from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from accounts.views import MeAPIView, RegisterAPIView
+from adminpanel.views import AdminSummaryAPIView
 from catalog.views import (
     CategoryViewSet,
     ServiceViewSet,
@@ -39,6 +40,7 @@ urlpatterns = [
     path("api/auth/me/", MeAPIView.as_view(), name="me"),
     path("api/auth/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("api/admin/summary/", AdminSummaryAPIView.as_view(), name="admin_summary"),
     path("api/technician/onboarding/", TechnicianOnboardingAPIView.as_view(), name="technician_onboarding"),
     path("api/recommendations/", RecommendationAPIView.as_view(), name="recommendations"),
     path("api/whatsapp/webhook/", WhatsAppWebhookView.as_view(), name="whatsapp_webhook"),

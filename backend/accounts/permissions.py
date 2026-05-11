@@ -1,0 +1,15 @@
+from rest_framework.permissions import BasePermission
+
+from .models import User
+
+
+class IsPlatformAdmin(BasePermission):
+    """Allow Django staff/superusers and SubasTech administrator role users."""
+
+    def has_permission(self, request, view):
+        user = request.user
+        return bool(
+            user
+            and user.is_authenticated
+            and (user.is_staff or user.is_superuser or getattr(user, "role", "") == User.Role.ADMIN)
+        )

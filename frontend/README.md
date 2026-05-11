@@ -22,3 +22,13 @@ Visit `/technician` to test the first authenticated technician workflow:
 2. Get a JWT access token from the backend `/api/auth/token/` endpoint.
 3. Paste the token in the dashboard.
 4. Complete onboarding and create services.
+
+
+## Administrator dashboard
+
+Visit `/admin` to test the first administrator workflow:
+
+1. Register or create a user with `role=admin` or use a Django staff user.
+2. Get a JWT access token from `/api/auth/token/`.
+3. Paste the token in the dashboard.
+4. Review metrics, alerts, technicians, services and disputes.

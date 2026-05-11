@@ -72,12 +72,20 @@ export default function Home() {
               <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700">
                 Ver flujo MVP
               </Button>
-              <Link
-                href="/technician"
-                className="inline-flex h-9 items-center justify-center rounded-lg border px-2.5 text-sm font-medium transition-colors hover:bg-muted"
-              >
-                Explorar dashboard tecnico
-              </Link>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Link
+                  href="/technician"
+                  className="inline-flex h-9 items-center justify-center rounded-lg border px-2.5 text-sm font-medium transition-colors hover:bg-muted"
+                >
+                  Dashboard tecnico
+                </Link>
+                <Link
+                  href="/admin"
+                  className="inline-flex h-9 items-center justify-center rounded-lg border px-2.5 text-sm font-medium transition-colors hover:bg-muted"
+                >
+                  Dashboard admin
+                </Link>
+              </div>
             </div>
           </div>
 
