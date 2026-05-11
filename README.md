@@ -73,6 +73,15 @@ scripts/run-backend.sh
 
 Open `http://localhost:8000/api/`.
 
+### Seed initial data
+
+```bash
+cd backend
+.venv/bin/python manage.py seed_initial_data
+```
+
+This creates the initial service categories and Barranquilla/Soledad coverage zones used by onboarding, recommendations and WhatsApp matching.
+
 ## First API endpoints
 
 - `POST /api/auth/register/`
@@ -98,12 +107,39 @@ Example recommendation request:
 }
 ```
 
+## WhatsApp Cloud API flow
+
+The webhook lives at:
+
+```txt
+GET|POST /api/whatsapp/webhook/
+```
+
+For local development it runs in dry-run mode by default. The backend still parses the incoming WhatsApp payload, extracts intent and builds the outbound message, but it does not call Meta until `WHATSAPP_DRY_RUN=False` and credentials are configured.
+
+Required environment variables for real delivery:
+
+```env
+WHATSAPP_VERIFY_TOKEN=subastech-dev-token
+WHATSAPP_DRY_RUN=False
+WHATSAPP_API_VERSION=v20.0
+WHATSAPP_PHONE_NUMBER_ID=your_meta_phone_number_id
+WHATSAPP_ACCESS_TOKEN=your_meta_access_token
+```
+
+Example local dry-run payload:
+
+```bash
+curl -X POST http://localhost:8000/api/whatsapp/webhook/   -H "Content-Type: application/json"   -d '{"from":"573001112233","message":"Necesito un electricista urgente en Riomar"}'
+```
+
+The response includes the extracted intent, ranked recommendations, the WhatsApp reply text and the outbound payload that would be sent to Meta.
+
 ## MVP build order
 
-1. Seed categories and zones.
+1. Run `seed_initial_data` to create categories and zones.
 2. Use `/technician` to complete technician onboarding and manage services with JWT auth.
-3. Connect WhatsApp Cloud API webhook.
+3. Configure Meta WhatsApp Cloud API credentials and expose `/api/whatsapp/webhook/` publicly.
 4. Improve intent extraction with Gemini Flash or OpenRouter.
-5. Build technician recommendation response templates for WhatsApp.
-6. Add administrator and arbiter dashboard pages.
-7. Expand dispute moderation and reputation effects.
+5. Add administrator and arbiter dashboard pages.
+6. Expand dispute moderation and reputation effects.

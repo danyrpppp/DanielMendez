@@ -112,3 +112,19 @@ class TechnicianServiceCrudTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 1)
         self.assertEqual(response.json()[0]["title"], "Mi servicio")
+
+
+class SeedInitialDataTests(TestCase):
+    def test_seed_initial_data_is_idempotent(self):
+        from django.core.management import call_command
+
+        call_command("seed_initial_data")
+        first_category_count = Category.objects.count()
+        first_zone_count = Zone.objects.count()
+
+        call_command("seed_initial_data")
+
+        self.assertEqual(Category.objects.count(), first_category_count)
+        self.assertEqual(Zone.objects.count(), first_zone_count)
+        self.assertTrue(Category.objects.filter(slug="electrician").exists())
+        self.assertTrue(Zone.objects.filter(slug="barranquilla-riomar").exists())
