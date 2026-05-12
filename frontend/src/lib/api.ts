@@ -1,5 +1,16 @@
 export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api";
 
+export type User = {
+  id: number;
+  username: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  role: "client" | "technician" | "admin" | "arbiter";
+  phone_number: string;
+  whatsapp_id: string | null;
+};
+
 export type Category = {
   id: number;
   name: string;

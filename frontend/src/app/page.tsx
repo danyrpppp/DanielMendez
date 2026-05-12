@@ -2,7 +2,6 @@ import Link from "next/link";
 import { Bot, Gauge, MessageCircle, ShieldCheck, Star, Wrench } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
@@ -69,9 +68,12 @@ export default function Home() {
               </p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
-              <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700">
-                Ver flujo MVP
-              </Button>
+              <Link
+                href="/login"
+                className="inline-flex h-9 items-center justify-center rounded-lg bg-emerald-600 px-2.5 text-sm font-medium text-white transition-colors hover:bg-emerald-700"
+              >
+                Entrar al proyecto
+              </Link>
               <div className="flex flex-col gap-3 sm:flex-row">
                 <Link
                   href="/technician"

@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { Loader2, Plus, RefreshCw, Trash2, UserCheck, Wrench } from "lucide-react";
 
+import { clearStoredAuth, getStoredAuth } from "@/lib/auth";
 import { API_URL, Category, OnboardingResponse, TechnicianService, Zone } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -42,7 +43,21 @@ export function TechnicianDashboard() {
   const [services, setServices] = useState<TechnicianService[]>([]);
   const [serviceForm, setServiceForm] = useState<ServiceForm>(emptyServiceForm);
   const [status, setStatus] = useState<ApiState>("idle");
-  const [message, setMessage] = useState("Paste a JWT token to sync your technician workspace.");
+  const [message, setMessage] = useState("Login in /login or use a JWT token to sync your technician workspace.");
+
+  useEffect(() => {
+    const session = getStoredAuth();
+    if (session) {
+      setToken(session.accessToken);
+      setMessage(`Sesion activa como ${session.user.username} (${session.user.role}). Puedes sincronizar el panel.`);
+    }
+  }, []);
+
+  function logout() {
+    clearStoredAuth();
+    setToken("");
+    setMessage("Sesion cerrada. Inicia sesion en /login o pega un token manual.");
+  }
 
   const authHeaders = useMemo(
     () => ({
@@ -224,7 +239,7 @@ export function TechnicianDashboard() {
           <CardTitle>Conexion con backend</CardTitle>
           <CardDescription>Usa el access token de /api/auth/token/ para probar el flujo autenticado.</CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-3 md:grid-cols-[1fr_auto]">
+        <CardContent className="grid gap-3 md:grid-cols-[1fr_auto_auto]">
           <Input
             value={token}
             onChange={(event) => setToken(event.target.value)}
@@ -233,6 +248,9 @@ export function TechnicianDashboard() {
           />
           <Button variant="outline" onClick={loadWorkspace} disabled={isLoading}>
             Load data
+          </Button>
+          <Button variant="ghost" onClick={logout} disabled={isLoading}>
+            Cerrar sesion
           </Button>
           <p className={`text-sm ${status === "error" ? "text-destructive" : "text-muted-foreground"}`}>{message}</p>
         </CardContent>

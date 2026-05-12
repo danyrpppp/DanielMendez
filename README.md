@@ -58,6 +58,24 @@ cp backend/.env.example backend/.env
 
 Then keep the PostgreSQL variables enabled in `backend/.env`.
 
+If you already have a PostgreSQL database, set these values in `backend/.env`:
+
+```env
+POSTGRES_DB=your_database
+POSTGRES_USER=your_user
+POSTGRES_PASSWORD=your_password
+POSTGRES_HOST=your_host
+POSTGRES_PORT=5432
+```
+
+Then run:
+
+```bash
+cd backend
+.venv/bin/python manage.py migrate
+.venv/bin/python manage.py seed_initial_data
+```
+
 ### Frontend
 
 ```bash
@@ -82,6 +100,17 @@ cd backend
 ```
 
 This creates the initial service categories and Barranquilla/Soledad coverage zones used by onboarding, recommendations and WhatsApp matching.
+
+## Frontend authentication
+
+Visit `http://localhost:3000/login` to authenticate with the Django JWT backend. After login, the frontend stores the session locally and redirects by role:
+
+- `technician` -> `/technician`
+- `admin` -> `/admin`
+- `arbiter` -> `/arbiter`
+- `client` -> `/`
+
+Dashboards still allow manual tokens for testing, but they now automatically reuse the saved session.
 
 ## First API endpoints
 

@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, CheckCircle2, Loader2, RefreshCw, ShieldCheck, Star, Users, Wrench } from "lucide-react";
 
+import { clearStoredAuth, getStoredAuth } from "@/lib/auth";
 import { AdminSummary, API_URL } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -38,7 +39,21 @@ export function AdminDashboard() {
   const [token, setToken] = useState("");
   const [summary, setSummary] = useState<AdminSummary>(emptySummary);
   const [status, setStatus] = useState<ApiState>("idle");
-  const [message, setMessage] = useState("Paste an administrator JWT token to load platform metrics.");
+  const [message, setMessage] = useState("Login in /login or use an administrator JWT token to load platform metrics.");
+
+  useEffect(() => {
+    const session = getStoredAuth();
+    if (session) {
+      setToken(session.accessToken);
+      setMessage(`Sesion activa como ${session.user.username} (${session.user.role}). Puedes sincronizar el panel.`);
+    }
+  }, []);
+
+  function logout() {
+    clearStoredAuth();
+    setToken("");
+    setMessage("Sesion cerrada. Inicia sesion en /login o pega un token admin manual.");
+  }
 
   const metricCards = useMemo(
     () => [
@@ -116,10 +131,13 @@ export function AdminDashboard() {
           <CardTitle>Conexion segura</CardTitle>
           <CardDescription>Usa un access token de un usuario con rol admin o permisos staff.</CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-3 md:grid-cols-[1fr_auto]">
+        <CardContent className="grid gap-3 md:grid-cols-[1fr_auto_auto]">
           <Input value={token} onChange={(event) => setToken(event.target.value)} placeholder="Admin JWT access token" type="password" />
           <Button variant="outline" onClick={loadSummary} disabled={isLoading}>
             Load summary
+          </Button>
+          <Button variant="ghost" onClick={logout} disabled={isLoading}>
+            Cerrar sesion
           </Button>
           <p className={`text-sm ${status === "error" ? "text-destructive" : "text-muted-foreground"}`}>{message}</p>
         </CardContent>

@@ -42,3 +42,13 @@ Visit `/arbiter` to test dispute moderation:
 2. Load the dispute queue.
 3. Review AI-assisted summary, classification and suggested priority.
 4. Claim the case and register the human final decision.
+
+
+## Login
+
+Visit `/login` to authenticate against the Django JWT endpoints. The app stores the access/refresh token pair in localStorage and redirects users by role:
+
+- technician -> `/technician`
+- admin -> `/admin`
+- arbiter -> `/arbiter`
+- client -> `/`

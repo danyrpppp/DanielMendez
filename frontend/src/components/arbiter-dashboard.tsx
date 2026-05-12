@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, Bot, CheckCircle2, ClipboardCheck, Loader2, RefreshCw, Scale } from "lucide-react";
 
+import { clearStoredAuth, getStoredAuth } from "@/lib/auth";
 import { API_URL, ArbiterDispute, ArbiterQueue } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,7 +29,21 @@ export function ArbiterDashboard() {
   const [decision, setDecision] = useState("favor_client");
   const [notes, setNotes] = useState("");
   const [status, setStatus] = useState<ApiState>("idle");
-  const [message, setMessage] = useState("Paste an arbiter JWT token to load disputes.");
+  const [message, setMessage] = useState("Login in /login or use an arbiter JWT token to load disputes.");
+
+  useEffect(() => {
+    const session = getStoredAuth();
+    if (session) {
+      setToken(session.accessToken);
+      setMessage(`Sesion activa como ${session.user.username} (${session.user.role}). Puedes sincronizar el panel.`);
+    }
+  }, []);
+
+  function logout() {
+    clearStoredAuth();
+    setToken("");
+    setMessage("Sesion cerrada. Inicia sesion en /login o pega un token arbitro manual.");
+  }
 
   const selectedDispute = useMemo(
     () => queue.disputes.find((dispute) => dispute.id === selectedId) ?? queue.disputes[0] ?? null,
@@ -120,10 +135,13 @@ export function ArbiterDashboard() {
           <CardTitle>Conexion segura</CardTitle>
           <CardDescription>Usa un access token de un usuario con rol arbiter, admin o staff.</CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-3 md:grid-cols-[1fr_auto]">
+        <CardContent className="grid gap-3 md:grid-cols-[1fr_auto_auto]">
           <Input value={token} onChange={(event) => setToken(event.target.value)} placeholder="Arbiter JWT access token" type="password" />
           <Button variant="outline" onClick={loadQueue} disabled={isLoading}>
             Load queue
+          </Button>
+          <Button variant="ghost" onClick={logout} disabled={isLoading}>
+            Cerrar sesion
           </Button>
           <p className={`text-sm ${status === "error" ? "text-destructive" : "text-muted-foreground"}`}>{message}</p>
         </CardContent>
