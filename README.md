@@ -115,6 +115,42 @@ cd backend
 
 This creates the initial service categories and Barranquilla/Soledad coverage zones used by onboarding, recommendations and WhatsApp matching.
 
+
+## Demo guide
+
+Visit `http://localhost:3000/demo` for an in-app presentation guide with demo users, route order and WhatsApp dry-run commands.
+
+## Demo data
+
+Run this after migrations to create demo users, verified technicians, services, leads, ratings and a dispute:
+
+```bash
+cd backend
+.venv/bin/python manage.py seed_demo_data
+```
+
+All demo users use this password:
+
+```txt
+Subastech123!
+```
+
+Demo users:
+
+- `demo_admin` -> administrator dashboard `/admin`
+- `demo_arbiter` -> arbiter dashboard `/arbiter`
+- `demo_client` -> client identity for ratings/disputes
+- `tech_carlos` -> technician dashboard `/technician`
+- `tech_laura` -> technician dashboard `/technician`
+- `tech_miguel` -> technician dashboard `/technician`
+
+Suggested demo flow:
+
+1. Login as `demo_admin` and review metrics, categories, zones and technician moderation.
+2. Login as `tech_carlos` and review services/leads.
+3. Send a dry-run WhatsApp request to `/api/whatsapp/webhook/` and reply with `1` to create a lead.
+4. Login as `demo_arbiter` and review the open dispute.
+
 ## Frontend authentication
 
 Visit `http://localhost:3000/login` to authenticate with the Django JWT backend. After login, the frontend stores the session locally and redirects by role:
@@ -130,6 +166,7 @@ Dashboards still allow manual tokens for testing, but they now automatically reu
 
 - `POST /api/auth/register/`
 - `POST /api/auth/token/`
+- `GET /api/health/`
 - `GET /api/auth/me/`
 - `GET /api/categories/`
 - `GET /api/zones/`

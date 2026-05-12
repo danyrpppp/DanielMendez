@@ -66,3 +66,19 @@ The dashboards include a mobile bottom navigation and card-based list views on s
 ## Technician leads
 
 The `/technician` dashboard lists WhatsApp-created leads. Technicians can mark each lead as contacted, accepted or closed.
+
+
+## Demo credentials
+
+After running `cd backend && .venv/bin/python manage.py seed_demo_data`, use `/login` with password `Subastech123!` for:
+
+- `demo_admin`
+- `demo_arbiter`
+- `tech_carlos`
+- `tech_laura`
+- `tech_miguel`
+
+
+## Demo guide
+
+Visit `/demo` for a presentation-ready guide with demo users, passwords, flow order and WhatsApp dry-run commands.

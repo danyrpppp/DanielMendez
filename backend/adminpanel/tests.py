@@ -101,3 +101,12 @@ class AdminTechnicianActionTests(TestCase):
         response = self.client.post(f"/api/admin/technicians/{self.profile.id}/verify/")
 
         self.assertEqual(response.status_code, 403)
+
+
+class HealthEndpointTests(TestCase):
+    def test_health_endpoint_is_public(self):
+        response = self.client.get("/api/health/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["status"], "ok")
+        self.assertIn("counts", response.json())

@@ -164,3 +164,23 @@ class AdminCatalogPermissionTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 403)
+
+
+class DemoSeedTests(TestCase):
+    def test_seed_demo_data_creates_project_demo_records_idempotently(self):
+        from django.core.management import call_command
+        from django.contrib.auth import get_user_model
+        from disputes.models import Dispute
+        from leads.models import ServiceLead
+
+        call_command("seed_demo_data")
+        call_command("seed_demo_data")
+
+        user_model = get_user_model()
+        self.assertTrue(user_model.objects.filter(username="demo_admin", role="admin").exists())
+        self.assertTrue(user_model.objects.filter(username="demo_arbiter", role="arbiter").exists())
+        self.assertTrue(user_model.objects.filter(username="tech_carlos", role="technician").exists())
+        self.assertGreaterEqual(TechnicianProfile.objects.filter(is_verified=True).count(), 3)
+        self.assertGreaterEqual(Service.objects.filter(is_active=True).count(), 3)
+        self.assertGreaterEqual(ServiceLead.objects.count(), 3)
+        self.assertGreaterEqual(Dispute.objects.count(), 1)

@@ -13,6 +13,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+const demoUsers = [
+  { username: "demo_admin", role: "Admin", target: "/admin" },
+  { username: "tech_carlos", role: "Tecnico", target: "/technician" },
+  { username: "demo_arbiter", role: "Arbitro", target: "/arbiter" },
+];
+
 export function LoginForm() {
   const router = useRouter();
   const [username, setUsername] = useState("");
@@ -69,7 +75,29 @@ export function LoginForm() {
             </Button>
             <p className="text-sm text-muted-foreground">{message}</p>
           </form>
+          <div className="mt-6 space-y-3">
+            <p className="text-sm font-medium">Usuarios demo</p>
+            <div className="grid gap-2 sm:grid-cols-3">
+              {demoUsers.map((user) => (
+                <Button
+                  key={user.username}
+                  type="button"
+                  variant="outline"
+                  className="h-auto flex-col items-start gap-1 p-3 text-left"
+                  onClick={() => {
+                    setUsername(user.username);
+                    setPassword("Subastech123!");
+                    setMessage(`Listo: ${user.username}. Presiona Entrar para abrir ${user.target}.`);
+                  }}
+                >
+                  <span>{user.role}</span>
+                  <span className="text-xs text-muted-foreground">{user.username}</span>
+                </Button>
+              ))}
+            </div>
+          </div>
           <div className="mt-6 grid gap-2 text-sm text-muted-foreground">
+            <Link className="hover:text-foreground" href="/demo">Ver guia demo</Link>
             <Link className="hover:text-foreground" href="/technician">Ir a panel tecnico</Link>
             <Link className="hover:text-foreground" href="/admin">Ir a panel admin</Link>
             <Link className="hover:text-foreground" href="/arbiter">Ir a panel arbitro</Link>
