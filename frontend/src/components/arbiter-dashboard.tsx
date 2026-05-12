@@ -5,6 +5,7 @@ import { AlertTriangle, Bot, CheckCircle2, ClipboardCheck, Loader2, RefreshCw, S
 
 import { clearStoredAuth, getStoredAuth } from "@/lib/auth";
 import { API_URL, ArbiterDispute, ArbiterQueue } from "@/lib/api";
+import { MobileRoleNav } from "@/components/mobile-role-nav";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -115,7 +116,7 @@ export function ArbiterDashboard() {
   const isLoading = status === "loading";
 
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 px-5 py-6 sm:px-8 lg:px-12">
+    <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 px-4 pb-28 pt-5 sm:px-8 md:pb-8 lg:px-12">
       <header className="flex flex-col gap-4 rounded-3xl border bg-card p-5 shadow-sm md:flex-row md:items-center md:justify-between">
         <div>
           <Badge variant="secondary">Human-in-the-loop moderation</Badge>
@@ -162,7 +163,33 @@ export function ArbiterDashboard() {
           </CardHeader>
           <CardContent>
             <Separator className="mb-4" />
-            <div className="overflow-x-auto">
+            <div className="grid gap-3 md:hidden">
+              {queue.disputes.length === 0 ? (
+                <div className="rounded-2xl border p-4 text-center text-sm text-muted-foreground">No hay disputas pendientes.</div>
+              ) : (
+                queue.disputes.map((dispute) => (
+                  <button
+                    key={dispute.id}
+                    type="button"
+                    onClick={() => setSelectedId(dispute.id)}
+                    className={`rounded-2xl border p-4 text-left shadow-sm transition-colors ${selectedDispute?.id === dispute.id ? "bg-muted" : "bg-card"}`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-medium">{dispute.title}</p>
+                        <p className="mt-1 text-sm text-muted-foreground">{dispute.client_name} vs {dispute.technician_name}</p>
+                      </div>
+                      <Badge variant={dispute.status === "open" ? "destructive" : "secondary"}>{dispute.status}</Badge>
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <Badge variant="secondary">{dispute.priority}</Badge>
+                      <Badge variant="secondary">{dispute.assistant.classification}</Badge>
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
+            <div className="hidden overflow-x-auto md:block">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -215,6 +242,7 @@ export function ArbiterDashboard() {
           onSubmitDecision={submitDecision}
         />
       </div>
+      <MobileRoleNav />
     </div>
   );
 }

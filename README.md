@@ -13,6 +13,19 @@ The current MVP direction is not a real-time auction system. The client experien
 - AI helps with controlled tasks such as category extraction, urgency detection, location extraction and dispute summaries.
 - Recommendation scores are calculated in backend business logic, not by the AI model.
 
+
+## Mobile-first UX
+
+SubasTech is mobile-first through a conversational architecture, not a native app requirement. The client experience is WhatsApp-first, while technicians, administrators and arbiters use responsive web dashboards.
+
+Current mobile UX support includes:
+
+- fixed bottom navigation on small screens
+- touch-sized dashboard actions
+- card-based mobile lists for technician services, admin technician moderation and arbiter dispute queue
+- desktop tables preserved for wider screens
+- responsive forms and dashboard layouts
+
 ## Repository structure
 
 ```txt

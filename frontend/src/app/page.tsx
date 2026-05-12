@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Bot, Gauge, MessageCircle, ShieldCheck, Star, Wrench } from "lucide-react";
 
+import { MobileRoleNav } from "@/components/mobile-role-nav";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -162,6 +163,7 @@ export default function Home() {
           })}
         </section>
       </section>
+      <MobileRoleNav />
     </main>
   );
 }

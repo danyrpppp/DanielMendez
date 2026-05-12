@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import { Loader2, LogIn, ShieldCheck } from "lucide-react";
 
+import { MobileRoleNav } from "@/components/mobile-role-nav";
 import { getStoredAuth, loginWithPassword, roleHome } from "@/lib/auth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -75,6 +76,7 @@ export function LoginForm() {
           </div>
         </CardContent>
       </Card>
+      <MobileRoleNav />
     </main>
   );
 }

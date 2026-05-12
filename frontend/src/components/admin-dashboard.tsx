@@ -5,6 +5,7 @@ import { AlertTriangle, CheckCircle2, Loader2, RefreshCw, ShieldCheck, Star, Use
 
 import { clearStoredAuth, getStoredAuth } from "@/lib/auth";
 import { AdminSummary, API_URL, Category, Zone } from "@/lib/api";
+import { MobileRoleNav } from "@/components/mobile-role-nav";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -161,7 +162,7 @@ export function AdminDashboard() {
   const isLoading = status === "loading";
 
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 px-5 py-6 sm:px-8 lg:px-12">
+    <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 px-4 pb-28 pt-5 sm:px-8 md:pb-8 lg:px-12">
       <header className="flex flex-col gap-4 rounded-3xl border bg-card p-5 shadow-sm md:flex-row md:items-center md:justify-between">
         <div>
           <Badge variant="secondary">Administrator dashboard</Badge>
@@ -264,7 +265,34 @@ export function AdminDashboard() {
         </CardHeader>
         <CardContent>
           <DataSeparator />
-          <div className="overflow-x-auto">
+          <div className="grid gap-3 md:hidden">
+            {summary.recent_technicians.length === 0 ? (
+              <div className="rounded-2xl border p-4 text-center text-sm text-muted-foreground">No hay tecnicos para mostrar.</div>
+            ) : (
+              summary.recent_technicians.map((technician) => (
+                <div key={technician.id} className="rounded-2xl border p-4 shadow-sm">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="font-medium">{technician.name}</p>
+                      <p className="text-sm text-muted-foreground">{technician.email || "Sin email"}</p>
+                    </div>
+                    <Badge variant={technician.user_is_active ? "secondary" : "destructive"}>{technician.user_is_active ? "Activo" : "Suspendido"}</Badge>
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Badge variant={technician.is_verified ? "default" : "secondary"}>{technician.is_verified ? "Verificado" : "Pendiente"}</Badge>
+                    <Badge variant="secondary">{technician.service_count} servicios</Badge>
+                    <Badge variant="secondary">{technician.average_rating} rating</Badge>
+                  </div>
+                  <p className="mt-3 text-sm text-muted-foreground">{technician.zones.join(", ") || "Sin zonas"}</p>
+                  <div className="mt-4 grid grid-cols-2 gap-2">
+                    <Button size="sm" variant="outline" onClick={() => void technicianAction(technician.id, technician.is_verified ? "unverify" : "verify")}>{technician.is_verified ? "Quitar" : "Verificar"}</Button>
+                    <Button size="sm" variant={technician.user_is_active ? "destructive" : "outline"} onClick={() => void technicianAction(technician.id, technician.user_is_active ? "suspend" : "activate")}>{technician.user_is_active ? "Suspender" : "Reactivar"}</Button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+          <div className="hidden overflow-x-auto md:block">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -422,6 +450,7 @@ export function AdminDashboard() {
           </CardContent>
         </Card>
       </section>
+      <MobileRoleNav />
     </div>
   );
 }

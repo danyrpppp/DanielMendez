@@ -56,3 +56,8 @@ Visit `/login` to authenticate against the Django JWT endpoints. The app stores 
 - admin -> `/admin`
 - arbiter -> `/arbiter`
 - client -> `/`
+
+
+## Mobile-first behavior
+
+The dashboards include a mobile bottom navigation and card-based list views on small screens. Tables are still used on desktop, but technician services, admin technician moderation and arbiter dispute queues switch to touch-friendly cards on mobile.

@@ -5,6 +5,7 @@ import { Loader2, Plus, RefreshCw, Trash2, UserCheck, Wrench } from "lucide-reac
 
 import { clearStoredAuth, getStoredAuth } from "@/lib/auth";
 import { API_URL, Category, OnboardingResponse, TechnicianService, Zone } from "@/lib/api";
+import { MobileRoleNav } from "@/components/mobile-role-nav";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -219,7 +220,7 @@ export function TechnicianDashboard() {
   const isLoading = status === "loading";
 
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 px-5 py-6 sm:px-8 lg:px-12">
+    <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 px-4 pb-28 pt-5 sm:px-8 md:pb-8 lg:px-12">
       <header className="flex flex-col gap-4 rounded-3xl border bg-card p-5 shadow-sm md:flex-row md:items-center md:justify-between">
         <div>
           <Badge variant="secondary">Technician workspace</Badge>
@@ -421,7 +422,32 @@ export function TechnicianDashboard() {
         </CardHeader>
         <CardContent>
           <Separator className="mb-4" />
-          <div className="overflow-x-auto">
+          <div className="grid gap-3 md:hidden">
+            {services.length === 0 ? (
+              <div className="rounded-2xl border p-4 text-center text-sm text-muted-foreground">Todavia no hay servicios cargados.</div>
+            ) : (
+              services.map((service) => (
+                <div key={service.id} className="rounded-2xl border p-4 shadow-sm">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="font-medium">{service.title}</p>
+                      <p className="mt-1 text-sm text-muted-foreground">{service.category.name}</p>
+                    </div>
+                    <Badge variant={service.is_active ? "default" : "secondary"}>{service.is_active ? "Activo" : "Inactivo"}</Badge>
+                  </div>
+                  <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">{service.description}</p>
+                  <div className="mt-4 flex items-center justify-between gap-3">
+                    <span className="text-sm font-semibold">${Number(service.base_price).toLocaleString("es-CO")}</span>
+                    <Button variant="outline" size="sm" onClick={() => void deleteService(service.id)}>
+                      <Trash2 className="mr-2 size-4" />
+                      Eliminar
+                    </Button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+          <div className="hidden overflow-x-auto md:block">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -467,6 +493,7 @@ export function TechnicianDashboard() {
           </div>
         </CardContent>
       </Card>
+      <MobileRoleNav />
     </div>
   );
 }
