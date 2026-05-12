@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     "catalog",
     "reputation",
     "disputes",
+    "leads",
     "recommendations",
     "whatsapp",
     "notifications",

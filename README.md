@@ -42,6 +42,7 @@ backend/    Django, Django REST Framework, JWT auth, recommendation modules
 - `reputation`: ratings and penalties.
 - `disputes`: dispute records, evidence, arbiter queue and human-in-the-loop decisions.
 - `notifications`: dashboard/WhatsApp/email notification records.
+- `leads`: WhatsApp-created service requests assigned to technicians.
 - `adminpanel`: administrator summary metrics for dashboard monitoring.
 
 ## Local development
@@ -136,6 +137,8 @@ Dashboards still allow manual tokens for testing, but they now automatically reu
 - `GET|POST|PATCH /api/technician/onboarding/`
 - `GET|POST|PATCH|DELETE /api/technician/services/`
 - `GET|POST|DELETE /api/technician/service-photos/`
+- `GET /api/technician/leads/`
+- `POST /api/technician/leads/<id>/status/`
 - `GET /api/admin/summary/`
 - `GET /api/arbiter/queue/`
 - `POST /api/arbiter/disputes/<id>/claim/`
@@ -195,6 +198,18 @@ Related endpoints:
 - `POST /api/admin/technicians/<id>/activate/`
 - `POST /api/categories/` with admin token
 - `POST /api/zones/` with admin token
+
+
+## WhatsApp lead flow
+
+After SubasTech sends recommended technicians by WhatsApp, the client can reply with the option number, for example `1`. The backend uses the latest WhatsApp conversation state to create a `ServiceLead` assigned to the selected technician. The technician can see and update that lead from `/technician`.
+
+Lead statuses:
+
+- new
+- contacted
+- accepted
+- closed
 
 ## WhatsApp Cloud API flow
 
