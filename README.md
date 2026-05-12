@@ -27,7 +27,7 @@ backend/    Django, Django REST Framework, JWT auth, recommendation modules
 - `recommendations`: deterministic technician ranking engine.
 - `whatsapp`: webhook entry point and controlled intent extraction placeholder.
 - `reputation`: ratings and penalties.
-- `disputes`: dispute records, evidence and AI summary placeholder.
+- `disputes`: dispute records, evidence, arbiter queue and human-in-the-loop decisions.
 - `notifications`: dashboard/WhatsApp/email notification records.
 - `adminpanel`: administrator summary metrics for dashboard monitoring.
 
@@ -95,6 +95,9 @@ This creates the initial service categories and Barranquilla/Soledad coverage zo
 - `GET|POST|PATCH|DELETE /api/technician/services/`
 - `GET|POST|DELETE /api/technician/service-photos/`
 - `GET /api/admin/summary/`
+- `GET /api/arbiter/queue/`
+- `POST /api/arbiter/disputes/<id>/claim/`
+- `POST /api/arbiter/disputes/<id>/decision/`
 - `POST /api/recommendations/`
 - `GET|POST /api/whatsapp/webhook/`
 
@@ -109,6 +112,22 @@ Example recommendation request:
 }
 ```
 
+
+
+## Arbiter dashboard
+
+Visit `http://localhost:3000/arbiter` to test human-in-the-loop dispute moderation. Paste a JWT access token for a user with `role=arbiter`, `role=admin`, or Django staff permissions.
+
+The arbiter flow is intentionally not autonomous:
+
+1. The system lists open and in-review disputes.
+2. Controlled AI helpers summarize the complaint, classify the dispute type and suggest priority.
+3. The human arbiter claims the case.
+4. The human arbiter records the final decision:
+   - favor client
+   - favor technician
+   - partial resolution
+5. The backend stores the decision, arbiter and arbiter notes.
 
 ## Admin dashboard
 

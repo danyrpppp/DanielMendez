@@ -85,6 +85,12 @@ export default function Home() {
                 >
                   Dashboard admin
                 </Link>
+                <Link
+                  href="/arbiter"
+                  className="inline-flex h-9 items-center justify-center rounded-lg border px-2.5 text-sm font-medium transition-colors hover:bg-muted"
+                >
+                  Dashboard arbitro
+                </Link>
               </div>
             </div>
           </div>

@@ -13,3 +13,19 @@ class IsPlatformAdmin(BasePermission):
             and user.is_authenticated
             and (user.is_staff or user.is_superuser or getattr(user, "role", "") == User.Role.ADMIN)
         )
+
+
+class IsPlatformArbiter(BasePermission):
+    """Allow arbiters, administrators and Django staff/superusers."""
+
+    def has_permission(self, request, view):
+        user = request.user
+        return bool(
+            user
+            and user.is_authenticated
+            and (
+                user.is_staff
+                or user.is_superuser
+                or getattr(user, "role", "") in {User.Role.ARBITER, User.Role.ADMIN}
+            )
+        )

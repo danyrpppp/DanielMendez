@@ -16,7 +16,7 @@ from catalog.views import (
     TechnicianServiceViewSet,
     ZoneViewSet,
 )
-from disputes.views import DisputeViewSet
+from disputes.views import ArbiterClaimAPIView, ArbiterDecisionAPIView, ArbiterQueueAPIView, DisputeViewSet
 from notifications.views import NotificationViewSet
 from recommendations.views import RecommendationAPIView
 from reputation.views import PenaltyViewSet, RatingViewSet
@@ -41,6 +41,9 @@ urlpatterns = [
     path("api/auth/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/admin/summary/", AdminSummaryAPIView.as_view(), name="admin_summary"),
+    path("api/arbiter/queue/", ArbiterQueueAPIView.as_view(), name="arbiter_queue"),
+    path("api/arbiter/disputes/<int:pk>/claim/", ArbiterClaimAPIView.as_view(), name="arbiter_claim"),
+    path("api/arbiter/disputes/<int:pk>/decision/", ArbiterDecisionAPIView.as_view(), name="arbiter_decision"),
     path("api/technician/onboarding/", TechnicianOnboardingAPIView.as_view(), name="technician_onboarding"),
     path("api/recommendations/", RecommendationAPIView.as_view(), name="recommendations"),
     path("api/whatsapp/webhook/", WhatsAppWebhookView.as_view(), name="whatsapp_webhook"),

@@ -26,6 +26,7 @@ class Dispute(models.Model):
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.OPEN)
     decision = models.CharField(max_length=24, choices=Decision.choices, default=Decision.PENDING)
     arbiter = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="assigned_disputes")
+    arbiter_notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     resolved_at = models.DateTimeField(null=True, blank=True)
@@ -33,12 +34,13 @@ class Dispute(models.Model):
     class Meta:
         ordering = ["-created_at"]
 
-    def resolve(self, decision: str, arbiter):
+    def resolve(self, decision: str, arbiter, notes: str = ""):
         self.decision = decision
         self.status = self.Status.RESOLVED
         self.arbiter = arbiter
+        self.arbiter_notes = notes
         self.resolved_at = timezone.now()
-        self.save(update_fields=["decision", "status", "arbiter", "resolved_at", "updated_at"])
+        self.save(update_fields=["decision", "status", "arbiter", "arbiter_notes", "resolved_at", "updated_at"])
 
 
 class DisputeEvidence(models.Model):

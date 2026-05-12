@@ -106,3 +106,42 @@ export type AdminSummary = {
   role_breakdown: Record<string, number>;
   alerts: AdminAlert[];
 };
+
+
+export type ArbiterAssistant = {
+  summary: string;
+  classification: string;
+  suggested_priority: string;
+  recommended_review_steps: string[];
+};
+
+export type ArbiterDispute = {
+  id: number;
+  client_name: string;
+  technician_name: string;
+  service_title: string | null;
+  title: string;
+  description: string;
+  ai_summary: string;
+  assistant: ArbiterAssistant;
+  priority: string;
+  status: string;
+  decision: string;
+  arbiter: number | null;
+  arbiter_notes: string;
+  evidence: Array<{ id: number; note: string; created_at: string }>;
+  created_at: string;
+  updated_at: string;
+  resolved_at: string | null;
+};
+
+export type ArbiterQueue = {
+  metrics: {
+    open: number;
+    in_review: number;
+    resolved_by_me: number;
+    high_priority: number;
+  };
+  by_status: Record<string, number>;
+  disputes: ArbiterDispute[];
+};
