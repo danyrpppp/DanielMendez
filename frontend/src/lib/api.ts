@@ -157,3 +157,19 @@ export type ArbiterQueue = {
   by_status: Record<string, number>;
   disputes: ArbiterDispute[];
 };
+
+
+export type TechnicianLead = {
+  id: number;
+  service_title: string | null;
+  client_name: string;
+  client_phone: string;
+  message: string;
+  category: string;
+  location: string;
+  urgency: string;
+  source: string;
+  status: "new" | "contacted" | "accepted" | "closed";
+  created_at: string;
+  updated_at: string;
+};

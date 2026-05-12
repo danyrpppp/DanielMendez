@@ -4,6 +4,7 @@ from rest_framework.test import APIClient
 
 from catalog.models import Category, Service, TechnicianProfile, Zone
 from reputation.models import Rating
+from leads.models import ServiceLead
 from .ai import extract_intent
 from .views import build_recommendation_reply
 
@@ -88,6 +89,21 @@ class WhatsAppWebhookTests(TestCase):
         self.assertEqual(len(body["recommendations"]), 1)
         self.assertIn("Carlos Mendoza", body["reply_text"])
         self.assertTrue(body["outbound"]["dry_run"])
+
+
+    def test_numeric_selection_creates_lead(self):
+        initial_payload = {"from": "573001112233", "message": "Necesito un electricista urgente en Riomar"}
+        initial_response = self.client.post("/api/whatsapp/webhook/", initial_payload, format="json")
+        self.assertEqual(initial_response.status_code, 200)
+
+        selection_response = self.client.post("/api/whatsapp/webhook/", {"from": "573001112233", "message": "1"}, format="json")
+
+        self.assertEqual(selection_response.status_code, 200)
+        self.assertEqual(ServiceLead.objects.count(), 1)
+        lead = ServiceLead.objects.first()
+        self.assertEqual(lead.client_phone, "573001112233")
+        self.assertEqual(lead.status, ServiceLead.Status.NEW)
+        self.assertIn("Enviamos tu solicitud", selection_response.json()["reply_text"])
 
     def test_builds_fallback_reply_when_no_recommendations_exist(self):
         reply = build_recommendation_reply({"category": "plumber", "location": "Boston"}, [])

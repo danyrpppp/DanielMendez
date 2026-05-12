@@ -4,7 +4,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { Loader2, Plus, RefreshCw, Trash2, UserCheck, Wrench } from "lucide-react";
 
 import { clearStoredAuth, getStoredAuth } from "@/lib/auth";
-import { API_URL, Category, OnboardingResponse, TechnicianService, Zone } from "@/lib/api";
+import { API_URL, Category, OnboardingResponse, TechnicianLead, TechnicianService, Zone } from "@/lib/api";
 import { MobileRoleNav } from "@/components/mobile-role-nav";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -42,6 +42,7 @@ export function TechnicianDashboard() {
   const [availability, setAvailability] = useState("available");
   const [responseTime, setResponseTime] = useState("30");
   const [services, setServices] = useState<TechnicianService[]>([]);
+  const [leads, setLeads] = useState<TechnicianLead[]>([]);
   const [serviceForm, setServiceForm] = useState<ServiceForm>(emptyServiceForm);
   const [status, setStatus] = useState<ApiState>("idle");
   const [message, setMessage] = useState("Login in /login or use a JWT token to sync your technician workspace.");
@@ -97,17 +98,19 @@ export function TechnicianDashboard() {
 
     setStatus("loading");
     try {
-      const [onboardingResponse, servicesResponse] = await Promise.all([
+      const [onboardingResponse, servicesResponse, leadsResponse] = await Promise.all([
         fetch(`${API_URL}/technician/onboarding/`, { headers: authHeaders }),
         fetch(`${API_URL}/technician/services/`, { headers: authHeaders }),
+        fetch(`${API_URL}/technician/leads/`, { headers: authHeaders }),
       ]);
 
-      if (!onboardingResponse.ok || !servicesResponse.ok) {
+      if (!onboardingResponse.ok || !servicesResponse.ok || !leadsResponse.ok) {
         throw new Error("Workspace request failed");
       }
 
       const onboarding = (await onboardingResponse.json()) as OnboardingResponse;
       const technicianServices = (await servicesResponse.json()) as TechnicianService[];
+      const technicianLeads = (await leadsResponse.json()) as TechnicianLead[];
       if (onboarding.profile) {
         setBio(onboarding.profile.bio ?? "");
         setAvailability(onboarding.profile.availability_status);
@@ -115,6 +118,7 @@ export function TechnicianDashboard() {
         setSelectedZones(onboarding.profile.zones.map((zone) => zone.id));
       }
       setServices(technicianServices);
+      setLeads(technicianLeads);
       setStatus("success");
       setMessage("Technician workspace loaded.");
     } catch {
@@ -184,6 +188,31 @@ export function TechnicianDashboard() {
     } catch {
       setStatus("error");
       setMessage("Could not create service. Complete onboarding first.");
+    }
+  }
+
+  async function updateLeadStatus(leadId: number, leadStatus: TechnicianLead["status"]) {
+    if (!token) {
+      setMessage("Add a JWT token before updating leads.");
+      return;
+    }
+
+    setStatus("loading");
+    try {
+      const response = await fetch(`${API_URL}/technician/leads/${leadId}/status/`, {
+        method: "POST",
+        headers: authHeaders,
+        body: JSON.stringify({ status: leadStatus }),
+      });
+      if (!response.ok) {
+        throw new Error("Lead status request failed");
+      }
+      await loadWorkspace();
+      setStatus("success");
+      setMessage("Lead updated.");
+    } catch {
+      setStatus("error");
+      setMessage("Could not update lead.");
     }
   }
 
@@ -414,6 +443,40 @@ export function TechnicianDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Leads recibidos</CardTitle>
+          <CardDescription>Solicitudes creadas cuando un cliente elige tu servicio por WhatsApp.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Separator className="mb-4" />
+          <div className="grid gap-3">
+            {leads.length === 0 ? (
+              <div className="rounded-2xl border p-4 text-center text-sm text-muted-foreground">Aun no tienes leads asignados.</div>
+            ) : (
+              leads.map((lead) => (
+                <div key={lead.id} className="rounded-2xl border p-4 shadow-sm">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <p className="font-medium">{lead.service_title ?? "Servicio tecnico"}</p>
+                      <p className="mt-1 text-sm text-muted-foreground">Cliente: {lead.client_phone}</p>
+                      <p className="mt-1 text-sm text-muted-foreground">Zona: {lead.location || "Sin zona"} - Urgencia: {lead.urgency}</p>
+                    </div>
+                    <Badge variant={lead.status === "new" ? "default" : "secondary"}>{lead.status}</Badge>
+                  </div>
+                  <p className="mt-3 text-sm leading-6 text-muted-foreground">{lead.message}</p>
+                  <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                    <Button size="sm" variant="outline" onClick={() => void updateLeadStatus(lead.id, "contacted")}>Contactado</Button>
+                    <Button size="sm" variant="outline" onClick={() => void updateLeadStatus(lead.id, "accepted")}>Aceptado</Button>
+                    <Button size="sm" variant="outline" onClick={() => void updateLeadStatus(lead.id, "closed")}>Cerrado</Button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

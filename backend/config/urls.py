@@ -17,6 +17,7 @@ from catalog.views import (
     ZoneViewSet,
 )
 from disputes.views import ArbiterClaimAPIView, ArbiterDecisionAPIView, ArbiterQueueAPIView, DisputeViewSet
+from leads.views import TechnicianLeadViewSet
 from notifications.views import NotificationViewSet
 from recommendations.views import RecommendationAPIView
 from reputation.views import PenaltyViewSet, RatingViewSet
@@ -29,6 +30,7 @@ router.register("technicians", TechnicianProfileViewSet)
 router.register("services", ServiceViewSet)
 router.register("technician/services", TechnicianServiceViewSet, basename="technician-services")
 router.register("technician/service-photos", TechnicianServicePhotoViewSet, basename="technician-service-photos")
+router.register("technician/leads", TechnicianLeadViewSet, basename="technician-leads")
 router.register("ratings", RatingViewSet)
 router.register("penalties", PenaltyViewSet)
 router.register("disputes", DisputeViewSet)
