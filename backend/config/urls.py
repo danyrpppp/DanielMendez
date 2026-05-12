@@ -22,6 +22,7 @@ from notifications.views import NotificationViewSet
 from recommendations.views import RecommendationAPIView
 from reputation.views import PenaltyViewSet, RatingViewSet
 from whatsapp.views import WhatsAppWebhookView
+from config.views import HealthAPIView
 
 router = DefaultRouter()
 router.register("categories", CategoryViewSet)
@@ -42,6 +43,7 @@ urlpatterns = [
     path("api/auth/me/", MeAPIView.as_view(), name="me"),
     path("api/auth/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("api/health/", HealthAPIView.as_view(), name="health"),
     path("api/admin/summary/", AdminSummaryAPIView.as_view(), name="admin_summary"),
     path("api/admin/technicians/<int:pk>/<str:action>/", AdminTechnicianActionAPIView.as_view(), name="admin_technician_action"),
     path("api/arbiter/queue/", ArbiterQueueAPIView.as_view(), name="arbiter_queue"),

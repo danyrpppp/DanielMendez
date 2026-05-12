@@ -77,3 +77,8 @@ After running `cd backend && .venv/bin/python manage.py seed_demo_data`, use `/l
 - `tech_carlos`
 - `tech_laura`
 - `tech_miguel`
+
+
+## Demo guide
+
+Visit `/demo` for a presentation-ready guide with demo users, passwords, flow order and WhatsApp dry-run commands.

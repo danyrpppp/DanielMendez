@@ -116,6 +116,10 @@ cd backend
 This creates the initial service categories and Barranquilla/Soledad coverage zones used by onboarding, recommendations and WhatsApp matching.
 
 
+## Demo guide
+
+Visit `http://localhost:3000/demo` for an in-app presentation guide with demo users, route order and WhatsApp dry-run commands.
+
 ## Demo data
 
 Run this after migrations to create demo users, verified technicians, services, leads, ratings and a dispute:
@@ -162,6 +166,7 @@ Dashboards still allow manual tokens for testing, but they now automatically reu
 
 - `POST /api/auth/register/`
 - `POST /api/auth/token/`
+- `GET /api/health/`
 - `GET /api/auth/me/`
 - `GET /api/categories/`
 - `GET /api/zones/`

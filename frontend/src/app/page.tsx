@@ -77,6 +77,12 @@ export default function Home() {
               </Link>
               <div className="flex flex-col gap-3 sm:flex-row">
                 <Link
+                  href="/demo"
+                  className="inline-flex h-9 items-center justify-center rounded-lg border px-2.5 text-sm font-medium transition-colors hover:bg-muted"
+                >
+                  Ver demo guiada
+                </Link>
+                <Link
                   href="/technician"
                   className="inline-flex h-9 items-center justify-center rounded-lg border px-2.5 text-sm font-medium transition-colors hover:bg-muted"
                 >
