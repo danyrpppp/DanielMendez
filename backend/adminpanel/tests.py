@@ -66,3 +66,38 @@ class AdminSummaryTests(TestCase):
         response = self.client.get("/api/admin/summary/")
 
         self.assertEqual(response.status_code, 403)
+
+
+class AdminTechnicianActionTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        user_model = get_user_model()
+        self.admin = user_model.objects.create_user(username="action-admin", password="Password123", role="admin")
+        self.client_user = user_model.objects.create_user(username="action-client", password="Password123", role="client")
+        self.tech_user = user_model.objects.create_user(username="action-tech", password="Password123", role="technician")
+        self.profile = TechnicianProfile.objects.create(user=self.tech_user, is_verified=False)
+
+    def test_admin_can_moderate_technician(self):
+        self.client.force_authenticate(self.admin)
+
+        verify_response = self.client.post(f"/api/admin/technicians/{self.profile.id}/verify/")
+        self.assertEqual(verify_response.status_code, 200)
+        self.profile.refresh_from_db()
+        self.assertTrue(self.profile.is_verified)
+
+        suspend_response = self.client.post(f"/api/admin/technicians/{self.profile.id}/suspend/")
+        self.assertEqual(suspend_response.status_code, 200)
+        self.tech_user.refresh_from_db()
+        self.assertFalse(self.tech_user.is_active)
+
+        activate_response = self.client.post(f"/api/admin/technicians/{self.profile.id}/activate/")
+        self.assertEqual(activate_response.status_code, 200)
+        self.tech_user.refresh_from_db()
+        self.assertTrue(self.tech_user.is_active)
+
+    def test_non_admin_cannot_moderate_technician(self):
+        self.client.force_authenticate(self.client_user)
+
+        response = self.client.post(f"/api/admin/technicians/{self.profile.id}/verify/")
+
+        self.assertEqual(response.status_code, 403)

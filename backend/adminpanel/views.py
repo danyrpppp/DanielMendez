@@ -1,5 +1,6 @@
 from django.db.models import Avg, Count, Q
 from rest_framework.response import Response
+from rest_framework import status
 from rest_framework.views import APIView
 
 from accounts.models import User
@@ -57,6 +58,7 @@ class AdminSummaryAPIView(APIView):
             "name": technician.user.get_full_name() or technician.user.username,
             "email": technician.user.email,
             "is_verified": technician.is_verified,
+            "user_is_active": technician.user.is_active,
             "availability_status": technician.availability_status,
             "response_time_minutes": technician.response_time_minutes,
             "service_count": technician.service_count,
@@ -119,3 +121,35 @@ class AdminSummaryAPIView(APIView):
                 }
             )
         return alerts
+
+
+class AdminTechnicianActionAPIView(APIView):
+    permission_classes = [IsPlatformAdmin]
+
+    def post(self, request, pk: int, action: str):
+        technician = TechnicianProfile.objects.select_related("user").filter(pk=pk).first()
+        if not technician:
+            return Response({"detail": "Technician not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        if action == "verify":
+            technician.is_verified = True
+            technician.save(update_fields=["is_verified", "updated_at"])
+        elif action == "unverify":
+            technician.is_verified = False
+            technician.save(update_fields=["is_verified", "updated_at"])
+        elif action == "suspend":
+            technician.user.is_active = False
+            technician.user.save(update_fields=["is_active"])
+        elif action == "activate":
+            technician.user.is_active = True
+            technician.user.save(update_fields=["is_active"])
+        else:
+            return Response({"detail": "Unsupported technician action."}, status=status.HTTP_400_BAD_REQUEST)
+
+        annotated = (
+            TechnicianProfile.objects.select_related("user")
+            .prefetch_related("zones")
+            .annotate(service_count=Count("services", distinct=True), avg_rating=Avg("ratings__score"))
+            .get(pk=technician.pk)
+        )
+        return Response(AdminSummaryAPIView()._technician_payload(annotated))

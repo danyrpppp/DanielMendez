@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from accounts.models import User
+from accounts.permissions import IsPlatformAdminOrReadOnly
 from .models import Category, Service, ServicePhoto, TechnicianProfile, Zone
 from .serializers import (
     CategorySerializer,
@@ -19,13 +20,13 @@ from .serializers import (
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsPlatformAdminOrReadOnly]
 
 
 class ZoneViewSet(viewsets.ModelViewSet):
     queryset = Zone.objects.all()
     serializer_class = ZoneSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsPlatformAdminOrReadOnly]
 
 
 class TechnicianProfileViewSet(viewsets.ModelViewSet):

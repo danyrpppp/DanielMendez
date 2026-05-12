@@ -128,3 +128,39 @@ class SeedInitialDataTests(TestCase):
         self.assertEqual(Zone.objects.count(), first_zone_count)
         self.assertTrue(Category.objects.filter(slug="electrician").exists())
         self.assertTrue(Zone.objects.filter(slug="barranquilla-riomar").exists())
+
+
+class AdminCatalogPermissionTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user_model = get_user_model()
+        self.admin = self.user_model.objects.create_user(username="catalog-admin", password="Password123", role="admin")
+        self.regular_user = self.user_model.objects.create_user(username="catalog-client", password="Password123", role="client")
+
+    def test_admin_can_create_category_and_zone(self):
+        self.client.force_authenticate(self.admin)
+
+        category_response = self.client.post(
+            "/api/categories/",
+            {"name": "Painter", "description": "Painting services", "is_active": True},
+            format="json",
+        )
+        zone_response = self.client.post(
+            "/api/zones/",
+            {"name": "Miramar", "city": "Barranquilla", "is_active": True},
+            format="json",
+        )
+
+        self.assertEqual(category_response.status_code, 201)
+        self.assertEqual(zone_response.status_code, 201)
+
+    def test_non_admin_cannot_create_category(self):
+        self.client.force_authenticate(self.regular_user)
+
+        response = self.client.post(
+            "/api/categories/",
+            {"name": "Painter", "description": "Painting services", "is_active": True},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 403)

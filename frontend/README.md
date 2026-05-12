@@ -32,6 +32,10 @@ Visit `/admin` to test the first administrator workflow:
 2. Get a JWT access token from `/api/auth/token/`.
 3. Paste the token in the dashboard.
 4. Review metrics, alerts, technicians, services and disputes.
+5. Verify/suspend/reactivate technicians.
+6. Create categories and coverage zones.
+
+Admin actions include technician moderation and catalog setup for categories/zones.
 
 
 ## Arbiter dashboard

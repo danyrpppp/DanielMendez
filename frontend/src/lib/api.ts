@@ -74,6 +74,7 @@ export type AdminTechnicianSummary = {
   name: string;
   email: string;
   is_verified: boolean;
+  user_is_active: boolean;
   availability_status: string;
   response_time_minutes: number;
   service_count: number;

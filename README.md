@@ -167,6 +167,22 @@ Visit `http://localhost:3000/admin` to load the administrator dashboard. Paste a
 
 The dashboard consumes `GET /api/admin/summary/` and shows platform metrics, recent technicians, services, disputes, role distribution and operational alerts.
 
+Administrative actions available:
+
+- verify/unverify technicians
+- suspend/reactivate technician users
+- create service categories
+- create coverage zones
+
+Related endpoints:
+
+- `POST /api/admin/technicians/<id>/verify/`
+- `POST /api/admin/technicians/<id>/unverify/`
+- `POST /api/admin/technicians/<id>/suspend/`
+- `POST /api/admin/technicians/<id>/activate/`
+- `POST /api/categories/` with admin token
+- `POST /api/zones/` with admin token
+
 ## WhatsApp Cloud API flow
 
 The webhook lives at:

@@ -6,7 +6,7 @@ from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from accounts.views import MeAPIView, RegisterAPIView
-from adminpanel.views import AdminSummaryAPIView
+from adminpanel.views import AdminSummaryAPIView, AdminTechnicianActionAPIView
 from catalog.views import (
     CategoryViewSet,
     ServiceViewSet,
@@ -41,6 +41,7 @@ urlpatterns = [
     path("api/auth/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/admin/summary/", AdminSummaryAPIView.as_view(), name="admin_summary"),
+    path("api/admin/technicians/<int:pk>/<str:action>/", AdminTechnicianActionAPIView.as_view(), name="admin_technician_action"),
     path("api/arbiter/queue/", ArbiterQueueAPIView.as_view(), name="arbiter_queue"),
     path("api/arbiter/disputes/<int:pk>/claim/", ArbiterClaimAPIView.as_view(), name="arbiter_claim"),
     path("api/arbiter/disputes/<int:pk>/decision/", ArbiterDecisionAPIView.as_view(), name="arbiter_decision"),

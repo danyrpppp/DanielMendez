@@ -1,16 +1,18 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { AlertTriangle, CheckCircle2, Loader2, RefreshCw, ShieldCheck, Star, Users, Wrench } from "lucide-react";
 
 import { clearStoredAuth, getStoredAuth } from "@/lib/auth";
-import { AdminSummary, API_URL } from "@/lib/api";
+import { AdminSummary, API_URL, Category, Zone } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
 
 type ApiState = "idle" | "loading" | "success" | "error";
 
@@ -38,6 +40,10 @@ const emptySummary: AdminSummary = {
 export function AdminDashboard() {
   const [token, setToken] = useState("");
   const [summary, setSummary] = useState<AdminSummary>(emptySummary);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [zones, setZones] = useState<Zone[]>([]);
+  const [categoryForm, setCategoryForm] = useState({ name: "", description: "" });
+  const [zoneForm, setZoneForm] = useState({ name: "", city: "Barranquilla" });
   const [status, setStatus] = useState<ApiState>("idle");
   const [message, setMessage] = useState("Login in /login or use an administrator JWT token to load platform metrics.");
 
@@ -47,6 +53,7 @@ export function AdminDashboard() {
       setToken(session.accessToken);
       setMessage(`Sesion activa como ${session.user.username} (${session.user.role}). Puedes sincronizar el panel.`);
     }
+    void loadCatalog();
   }, []);
 
   function logout() {
@@ -57,33 +64,23 @@ export function AdminDashboard() {
 
   const metricCards = useMemo(
     () => [
-      {
-        title: "Tecnicos",
-        value: summary.metrics.total_technicians,
-        detail: `${summary.metrics.verified_technicians} verificados`,
-        icon: Users,
-      },
-      {
-        title: "Servicios activos",
-        value: summary.metrics.active_services,
-        detail: `${summary.metrics.inactive_services} inactivos`,
-        icon: Wrench,
-      },
-      {
-        title: "Disputas abiertas",
-        value: summary.metrics.open_disputes,
-        detail: `${summary.metrics.in_review_disputes} en revision`,
-        icon: AlertTriangle,
-      },
-      {
-        title: "Rating promedio",
-        value: summary.metrics.average_rating,
-        detail: `${summary.metrics.total_categories} categorias`,
-        icon: Star,
-      },
+      { title: "Tecnicos", value: summary.metrics.total_technicians, detail: `${summary.metrics.verified_technicians} verificados`, icon: Users },
+      { title: "Servicios activos", value: summary.metrics.active_services, detail: `${summary.metrics.inactive_services} inactivos`, icon: Wrench },
+      { title: "Disputas abiertas", value: summary.metrics.open_disputes, detail: `${summary.metrics.in_review_disputes} en revision`, icon: AlertTriangle },
+      { title: "Rating promedio", value: summary.metrics.average_rating, detail: `${summary.metrics.total_categories} categorias`, icon: Star },
     ],
     [summary],
   );
+
+  async function loadCatalog() {
+    try {
+      const [categoryResponse, zoneResponse] = await Promise.all([fetch(`${API_URL}/categories/`), fetch(`${API_URL}/zones/`)]);
+      if (categoryResponse.ok) setCategories((await categoryResponse.json()) as Category[]);
+      if (zoneResponse.ok) setZones((await zoneResponse.json()) as Zone[]);
+    } catch {
+      setMessage("No se pudo cargar catalogo publico.");
+    }
+  }
 
   async function loadSummary() {
     if (!token) {
@@ -93,18 +90,71 @@ export function AdminDashboard() {
 
     setStatus("loading");
     try {
-      const response = await fetch(`${API_URL}/admin/summary/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!response.ok) {
-        throw new Error("Admin summary request failed");
-      }
+      const response = await fetch(`${API_URL}/admin/summary/`, { headers: { Authorization: `Bearer ${token}` } });
+      if (!response.ok) throw new Error("Admin summary request failed");
       setSummary((await response.json()) as AdminSummary);
+      await loadCatalog();
       setStatus("success");
       setMessage("Admin summary loaded.");
     } catch {
       setStatus("error");
       setMessage("Could not load admin summary. Check that the token belongs to an admin user.");
+    }
+  }
+
+  async function technicianAction(technicianId: number, action: "verify" | "unverify" | "suspend" | "activate") {
+    if (!token) {
+      setMessage("Add an administrator JWT token before moderating technicians.");
+      return;
+    }
+
+    setStatus("loading");
+    try {
+      const response = await fetch(`${API_URL}/admin/technicians/${technicianId}/${action}/`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error("Technician action failed");
+      await loadSummary();
+      setStatus("success");
+      setMessage("Technician updated.");
+    } catch {
+      setStatus("error");
+      setMessage("Could not update technician.");
+    }
+  }
+
+  async function createCategory(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    await createCatalogItem("categories", categoryForm, () => setCategoryForm({ name: "", description: "" }));
+  }
+
+  async function createZone(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    await createCatalogItem("zones", zoneForm, () => setZoneForm({ name: "", city: "Barranquilla" }));
+  }
+
+  async function createCatalogItem(endpoint: "categories" | "zones", payload: Record<string, string>, reset: () => void) {
+    if (!token) {
+      setMessage("Add an administrator JWT token before changing catalog data.");
+      return;
+    }
+
+    setStatus("loading");
+    try {
+      const response = await fetch(`${API_URL}/${endpoint}/`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ ...payload, is_active: true }),
+      });
+      if (!response.ok) throw new Error("Catalog create failed");
+      reset();
+      await loadSummary();
+      setStatus("success");
+      setMessage(endpoint === "categories" ? "Category created." : "Zone created.");
+    } catch {
+      setStatus("error");
+      setMessage("Could not create catalog item.");
     }
   }
 
@@ -117,7 +167,7 @@ export function AdminDashboard() {
           <Badge variant="secondary">Administrator dashboard</Badge>
           <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">Control operativo</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-            Monitorea tecnicos, servicios, disputas y alertas para mantener la plataforma lista para el flujo de WhatsApp.
+            Monitorea y administra tecnicos, servicios, disputas, categorias y zonas para mantener la plataforma operativa.
           </p>
         </div>
         <Button onClick={loadSummary} disabled={isLoading} className="bg-emerald-600 hover:bg-emerald-700">
@@ -133,12 +183,8 @@ export function AdminDashboard() {
         </CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-[1fr_auto_auto]">
           <Input value={token} onChange={(event) => setToken(event.target.value)} placeholder="Admin JWT access token" type="password" />
-          <Button variant="outline" onClick={loadSummary} disabled={isLoading}>
-            Load summary
-          </Button>
-          <Button variant="ghost" onClick={logout} disabled={isLoading}>
-            Cerrar sesion
-          </Button>
+          <Button variant="outline" onClick={loadSummary} disabled={isLoading}>Load summary</Button>
+          <Button variant="ghost" onClick={logout} disabled={isLoading}>Cerrar sesion</Button>
           <p className={`text-sm ${status === "error" ? "text-destructive" : "text-muted-foreground"}`}>{message}</p>
         </CardContent>
       </Card>
@@ -214,7 +260,7 @@ export function AdminDashboard() {
       <Card>
         <CardHeader>
           <CardTitle>Tecnicos recientes</CardTitle>
-          <CardDescription>Verificacion, disponibilidad y cobertura.</CardDescription>
+          <CardDescription>Verifica, suspende o reactiva tecnicos desde el panel.</CardDescription>
         </CardHeader>
         <CardContent>
           <DataSeparator />
@@ -225,8 +271,8 @@ export function AdminDashboard() {
                   <TableHead>Nombre</TableHead>
                   <TableHead>Estado</TableHead>
                   <TableHead>Servicios</TableHead>
-                  <TableHead>Rating</TableHead>
                   <TableHead>Zonas</TableHead>
+                  <TableHead className="text-right">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -240,14 +286,20 @@ export function AdminDashboard() {
                         <p className="text-sm text-muted-foreground">{technician.email || "Sin email"}</p>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={technician.is_verified ? "default" : "secondary"}>
-                          {technician.is_verified ? "Verificado" : "Pendiente"}
-                        </Badge>
-                        <p className="mt-1 text-xs text-muted-foreground">{technician.availability_status}</p>
+                        <div className="flex flex-wrap gap-2">
+                          <Badge variant={technician.is_verified ? "default" : "secondary"}>{technician.is_verified ? "Verificado" : "Pendiente"}</Badge>
+                          <Badge variant={technician.user_is_active ? "secondary" : "destructive"}>{technician.user_is_active ? "Activo" : "Suspendido"}</Badge>
+                        </div>
+                        <p className="mt-1 text-xs text-muted-foreground">{technician.availability_status} - {technician.average_rating} rating</p>
                       </TableCell>
                       <TableCell>{technician.service_count}</TableCell>
-                      <TableCell>{technician.average_rating}</TableCell>
                       <TableCell>{technician.zones.join(", ") || "Sin zonas"}</TableCell>
+                      <TableCell className="min-w-56 text-right">
+                        <div className="flex flex-wrap justify-end gap-2">
+                          <Button size="sm" variant="outline" onClick={() => void technicianAction(technician.id, technician.is_verified ? "unverify" : "verify")}>{technician.is_verified ? "Quitar verificacion" : "Verificar"}</Button>
+                          <Button size="sm" variant={technician.user_is_active ? "destructive" : "outline"} onClick={() => void technicianAction(technician.id, technician.user_is_active ? "suspend" : "activate")}>{technician.user_is_active ? "Suspender" : "Reactivar"}</Button>
+                        </div>
+                      </TableCell>
                     </TableRow>
                   ))
                 )}
@@ -256,6 +308,40 @@ export function AdminDashboard() {
           </div>
         </CardContent>
       </Card>
+
+      <section className="grid gap-6 xl:grid-cols-2">
+        <CatalogCard
+          title="Categorias"
+          description="Gestiona tipos de servicio usados por WhatsApp y recomendaciones."
+          items={categories.map((category) => `${category.name}${category.is_active ? "" : " (inactiva)"}`)}
+          onSubmit={createCategory}
+        >
+          <div className="space-y-2">
+            <Label htmlFor="category-name">Nombre</Label>
+            <Input id="category-name" value={categoryForm.name} onChange={(event) => setCategoryForm((current) => ({ ...current, name: event.target.value }))} required />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="category-description">Descripcion</Label>
+            <Textarea id="category-description" value={categoryForm.description} onChange={(event) => setCategoryForm((current) => ({ ...current, description: event.target.value }))} />
+          </div>
+        </CatalogCard>
+
+        <CatalogCard
+          title="Zonas"
+          description="Gestiona cobertura usada para matching de tecnicos."
+          items={zones.map((zone) => `${zone.name}, ${zone.city}${zone.is_active ? "" : " (inactiva)"}`)}
+          onSubmit={createZone}
+        >
+          <div className="space-y-2">
+            <Label htmlFor="zone-name">Nombre</Label>
+            <Input id="zone-name" value={zoneForm.name} onChange={(event) => setZoneForm((current) => ({ ...current, name: event.target.value }))} required />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="zone-city">Ciudad</Label>
+            <Input id="zone-city" value={zoneForm.city} onChange={(event) => setZoneForm((current) => ({ ...current, city: event.target.value }))} required />
+          </div>
+        </CatalogCard>
+      </section>
 
       <section className="grid gap-6 xl:grid-cols-2">
         <Card>
@@ -287,11 +373,7 @@ export function AdminDashboard() {
                         </TableCell>
                         <TableCell>{service.technician}</TableCell>
                         <TableCell>${Number(service.base_price).toLocaleString("es-CO")}</TableCell>
-                        <TableCell>
-                          <Badge variant={service.is_active ? "default" : "secondary"}>
-                            {service.is_active ? "Activo" : "Inactivo"}
-                          </Badge>
-                        </TableCell>
+                        <TableCell><Badge variant={service.is_active ? "default" : "secondary"}>{service.is_active ? "Activo" : "Inactivo"}</Badge></TableCell>
                       </TableRow>
                     ))
                   )}
@@ -330,9 +412,7 @@ export function AdminDashboard() {
                         </TableCell>
                         <TableCell>{dispute.technician}</TableCell>
                         <TableCell>{dispute.priority}</TableCell>
-                        <TableCell>
-                          <Badge variant={dispute.status === "open" ? "destructive" : "secondary"}>{dispute.status}</Badge>
-                        </TableCell>
+                        <TableCell><Badge variant={dispute.status === "open" ? "destructive" : "secondary"}>{dispute.status}</Badge></TableCell>
                       </TableRow>
                     ))
                   )}
@@ -346,6 +426,27 @@ export function AdminDashboard() {
   );
 }
 
+function CatalogCard({ title, description, items, onSubmit, children }: { title: string; description: string; items: string[]; onSubmit: (event: FormEvent<HTMLFormElement>) => void; children: React.ReactNode }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+        <CardDescription>{description}</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-5">
+        <form className="space-y-4" onSubmit={onSubmit}>
+          {children}
+          <Button type="submit" className="w-full">Crear {title.toLowerCase()}</Button>
+        </form>
+        <Separator />
+        <div className="grid gap-2">
+          {items.length === 0 ? <p className="text-sm text-muted-foreground">No hay registros.</p> : items.slice(0, 8).map((item) => <div key={item} className="rounded-xl border px-3 py-2 text-sm">{item}</div>)}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 function DataSeparator() {
   return <Separator className="mb-4" />;
 }
@@ -353,9 +454,7 @@ function DataSeparator() {
 function EmptyRow({ colSpan, label }: { colSpan: number; label: string }) {
   return (
     <TableRow>
-      <TableCell colSpan={colSpan} className="text-center text-muted-foreground">
-        {label}
-      </TableCell>
+      <TableCell colSpan={colSpan} className="text-center text-muted-foreground">{label}</TableCell>
     </TableRow>
   );
 }
